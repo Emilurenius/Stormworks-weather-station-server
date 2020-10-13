@@ -1,0 +1,16 @@
+{
+  "name": "stormworks_weatherstation_server_v2",
+  "version": "2.0.0",
+  "description": "A server that recieves and stores information about the weather in stormworks",
+  "main": "app.js",
+  "scripts": {
+    "test": "npm node app.js"
+  },
+  "author": "Emil Chrstiansen",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "fs": "0.0.1-security",
+    "path": "^0.12.7"
+  }
+}
