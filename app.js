@@ -4,58 +4,63 @@ const fs = require("fs")
 const port = 100
 const app = express()
 var connected_stations = []
+var StationData = {}
 
-function clearCashe() {
-    const directoryPath = path.join(__dirname, "public");
-    //passsing directoryPath and callback function
-    fs.readdir(directoryPath, function (err, files) {
-        //handling error
-        if (err) {
-            return console.log('\nUnable to scan directory: ' + err);
-        } 
-        //listing all files using forEach
-        files.forEach(function (file) {
-            // Do whatever you want to do with the file
-            if (file !== "package.json") { // Making sure not to delete package.json, as it should not be deleted
-                if (file.endsWith(".json")) {
-                    fs.unlink(`${directoryPath}/${file}`, function(err) {
-                        if (err) throw err
-                        console.log(`\n${file} deleted`)
-                    })
-                }
-            }
-        });
-    });
-}
-
-clearCashe()
 app.use("/static", express.static("public"))
 
-app.get("/station", (req, res) => {
+app.get("/station-send", (req, res) => {
     var queryParameter = req.query
 
-    if ((queryParameter.ID) && (connected_stations.includes(StationData.ID))) {
-        StationData = {
-            "ID": queryParameter.ID,
+    if (queryParameter.ID) {
+        StationData[parseInt(queryParameter.ID)] = {
             "battery": queryParameter.batteryP,
             "locationX": queryParameter.x,
             "locationY": queryParameter.y,
             "windS": queryParameter.windS,
-            "windD": queryParameter.windD,
             "humidity": queryParameter.humidity,
             "rain": queryParameter.rain,
             "time": Date.now(),
         }
-        console.log(`Station reconnected:\n ${StationData}`)
+        console.log(`\nStation reconnected: ID=${queryParameter.ID}`)
+        res.send(`Reconnected: ${queryParameter.ID}`)
     } else {
-
+        var ID = connected_stations.length
+        connected_stations.push(ID)
+        StationData[ID] = {
+            "battery": queryParameter.batteryP,
+            "locationX": queryParameter.x,
+            "locationY": queryParameter.y,
+            "windS": queryParameter.windS,
+            "humidity": queryParameter.humidity,
+            "rain": queryParameter.rain,
+            "time": Date.now(),
+        }
+        console.log(`New station connected: ID=${ID}`)
+        res.send(`${ID}`)
     }
 })
 
-app.get("/station/clear-cashe", function(req, res) {
-    clearCashe()
-    console.log("\nCashe deleted remotely")
+app.get("/station-get", (req, res) => {
+    var queryParameter = req.query
+
+    res.send(StationData[parseInt(queryParameter.ID)])
+})
+
+app.get("/station-clear", function(req, res) {
+    connected_stations = []
+    StationData = {}
+    console.log("\nCashe cleared remotely")
     res.send("Cashe cleared")
+})
+
+app.get("/readme", (req, res) => {
+    res.sendFile(`${__dirname}/README.md`)
+    console.log("readme requested")
+})
+
+app.get("/favicon", (req, res) => {
+    res.sendFile(`${__dirname}/favicon.ico`)
+    console.log("favicon requested")
 })
 
 app.listen(port, () => console.log(`Server listening on port: ${port}`))
