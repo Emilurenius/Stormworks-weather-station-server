@@ -20,7 +20,7 @@ function nearNumber(number, x, y) { // Used for finding the closest weatherstati
         }
         return 0;
     }else
-      return false;
+      return x
   }
 
 
@@ -72,13 +72,27 @@ app.get("/station-clear", (req, res) => { // Resets all variables that contain i
 })
 
 app.get("/station-get/local", (req, res) => { // Searches through all connected stations, and sends the one that is closest to given coordinates.
+    console.log("Getting local station")
     var queryParameter = req.query
-    console.log("Hello")
+    var closestID = 0
+    var closestX = StationData[0].locationX
+    var closestY = StationData[0].locationY
 
     for (const [key, value] of Object.entries(StationData)) {
-        console.log(key)
+        console.log(`Checking: ${key}`)
+        distanceX = nearNumber(parseFloat(queryParameter.x), parseFloat(closestX), parseFloat(value.locationX))
+        distanceY = nearNumber(parseFloat(queryParameter.y), parseFloat(closestY), parseFloat(value.locationY))
+        console.log(distanceX)
+        console.log(distanceY)
+
+        if ((distanceX < closestX) && (distanceY < closestY)) {
+            console.log(`${key} was closer`)
+            closestX = distanceX
+            closestY = distanceY
+            closestID = key
+        }
     }
-    res.send("hello world")
+    res.send(`${closestID}:\n X: ${closestX}\n Y: ${closestY}`)
 })
 
 app.get("/readme", (req, res) => { // Sends the readme file
